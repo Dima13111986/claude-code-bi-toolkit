@@ -1,0 +1,105 @@
+{
+  "file": "data\\sales_sample.csv",
+  "timestamp": "2026-03-30T15:59:42.053352",
+  "total_rows": 206,
+  "score": 79,
+  "grade": "B",
+  "total_issues": 9,
+  "issues_by_severity": {
+    "CRITICAL": 1,
+    "WARNING": 8,
+    "INFO": 0
+  },
+  "issues": [
+    {
+      "check": "missing_values",
+      "column": "Region",
+      "count": 1,
+      "percentage": 0.5,
+      "severity": "WARNING",
+      "message": "Region: 1 missing (0.5%)"
+    },
+    {
+      "check": "missing_values",
+      "column": "Product",
+      "count": 2,
+      "percentage": 1.0,
+      "severity": "WARNING",
+      "message": "Product: 2 missing (1.0%)"
+    },
+    {
+      "check": "missing_values",
+      "column": "SalesAmount",
+      "count": 6,
+      "percentage": 2.9,
+      "severity": "WARNING",
+      "message": "SalesAmount: 6 missing (2.9%)"
+    },
+    {
+      "check": "missing_values",
+      "column": "Quantity",
+      "count": 2,
+      "percentage": 1.0,
+      "severity": "WARNING",
+      "message": "Quantity: 2 missing (1.0%)"
+    },
+    {
+      "check": "duplicates",
+      "column": "_all_",
+      "count": 6,
+      "percentage": 2.9,
+      "severity": "WARNING",
+      "message": "6 duplicate rows (2.9%)"
+    },
+    {
+      "check": "outliers_iqr",
+      "column": "SalesAmount",
+      "count": 6,
+      "severity": "WARNING",
+      "bounds": {
+        "lower": -2679.32,
+        "upper": 7857.06
+      },
+      "examples": [
+        999999.0,
+        999999.0,
+        999999.0,
+        999999.0,
+        999999.0
+      ],
+      "message": "SalesAmount: 6 outliers (bounds: [-2679.32, 7857.06])"
+    },
+    {
+      "check": "invalid_dates",
+      "column": "OrderDate",
+      "count": 7,
+      "severity": "CRITICAL",
+      "examples": [
+        "not_a_date",
+        "00/15/2024",
+        "13/25/2024",
+        "02/30/2024"
+      ],
+      "message": "OrderDate: 7 invalid dates (e.g. ['not_a_date', '00/15/2024', '13/25/2024'])"
+    },
+    {
+      "check": "whitespace",
+      "column": "Region",
+      "count": 6,
+      "severity": "WARNING",
+      "examples": [
+        "' East '",
+        "' East '",
+        "'South '"
+      ],
+      "message": "Region: 6 values with extra whitespace"
+    },
+    {
+      "check": "negative_values",
+      "column": "Quantity",
+      "count": 2,
+      "severity": "WARNING",
+      "message": "Quantity: 2 negative values"
+    }
+  ]
+}
