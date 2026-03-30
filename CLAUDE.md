@@ -45,6 +45,24 @@ cd scripts/deployment-notes && npm test          # run Node.js tests
 
 Defined in `.claude/commands/`:
 
-- `/commit` — stages relevant files, writes a conventional commit message, and commits
-- `/review [file-or-dir]` — reviews for correctness, style, security, performance, and test coverage; outputs a table
-- `/pr` — generates a PR description from commits since `main`
+- `/commit` — smart commit: stages relevant files, writes a conventional message, and commits
+- `/review [file-or-dir]` — code review with severity table (correctness, style, security, performance, tests)
+- `/pr` — generates a PR description from the branch diff against `main`
+
+## Skills
+
+Defined in `.claude/skills/`, auto-applied when relevant:
+
+- `bi-code-style` — Python/DAX/SQL/YAML conventions for this project
+- `dax-patterns` — DAX measure patterns library
+
+## Hooks
+
+Configured in `.claude/settings.json`:
+
+- **PostToolUse** (`Edit|Write` on `*.py`) — runs `ruff format` then `ruff check --fix` automatically after any Python file is written or edited
+
+## Permissions
+
+- **Allow:** `Read`, `Write`, `Bash` (git, python, node, npm, ruff, pytest)
+- **Deny:** `.env` files (read and write)
