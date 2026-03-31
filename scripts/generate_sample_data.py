@@ -1,131 +1,97 @@
 """Generate sample sales CSV with intentional data quality issues.
 
-Creates a 200-row CSV file with realistic sales data that contains
-common data quality problems: missing values, duplicates, outliers,
-invalid dates, whitespace in strings, and negative quantities.
+Creates a 200-row dataset with ~5% missing values, ~3% duplicates,
+outliers, invalid dates, whitespace issues, and negative quantities
+for testing data quality checks before Power BI import.
 """
 
 import argparse
-import csv
 import logging
 import random
 from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+import pandas as pd
+
 logger = logging.getLogger(__name__)
 
-# --- Constants ---
-
-PRODUCTS: list[str] = [
+PRODUCTS = [
     "Laptop", "Monitor", "Keyboard", "Mouse", "Headset",
     "Webcam", "Docking Station", "USB Hub", "SSD Drive", "RAM Module",
 ]
-
-REGIONS: list[str] = ["North", "South", "East", "West", "Central"]
-
-REGIONS_WITH_ISSUES: list[str] = [" North", "South ", " East ", "west", "CENTRAL"]
-
-VALID_DATES: list[str] = [
-    "01/15/2024", "02/20/2024", "03/10/2024", "04/05/2024",
-    "05/18/2024", "06/22/2024", "07/30/2024", "08/14/2024",
-    "09/03/2024", "10/25/2024", "11/11/2024", "12/01/2024",
-]
-
-INVALID_DATES: list[str] = [
-    "13/25/2024", "00/15/2024", "02/30/2024", "14/01/2024",
-    "2024-01-15", "15.03.2024", "not_a_date",
-]
-
-COLUMNS: list[str] = [
-    "OrderDate", "Region", "Product", "SalesAmount",
-    "Quantity", "CustomerID",
-]
+REGIONS = ["North", "South", "East", "West", "Central"]
 
 
-def generate_row(row_id: int) -> dict[str, str]:
-    """Generate a single row of sales data.
+def generate_sales_data(num_rows: int = 200, seed: int = 42) -> pd.DataFrame:
+    """Generate a sales DataFrame with intentional quality issues.
 
     Args:
-        row_id: Sequential identifier for the row.
+        num_rows: Number of rows to generate.
+        seed: Random seed for reproducibility.
 
     Returns:
-        Dictionary with column names as keys and string values.
+        DataFrame with columns: OrderDate, Region, Product,
+        SalesAmount, Quantity, CustomerID.
     """
-    # OrderDate: ~5% invalid
-    if random.random() < 0.05:
-        order_date = random.choice(INVALID_DATES)
-    else:
-        order_date = random.choice(VALID_DATES)
+    random.seed(seed)
 
-    # Region: ~8% with whitespace/case issues
-    if random.random() < 0.08:
-        region = random.choice(REGIONS_WITH_ISSUES)
-    else:
-        region = random.choice(REGIONS)
-
-    product = random.choice(PRODUCTS)
-
-    # SalesAmount: ~5% missing, ~2% outlier (999999)
-    roll = random.random()
-    if roll < 0.05:
-        sales_amount = ""
-    elif roll < 0.07:
-        sales_amount = str(999999)
-    else:
-        sales_amount = str(round(random.uniform(50, 5000), 2))
-
-    # Quantity: ~3% negative
-    if random.random() < 0.03:
-        quantity = str(random.randint(-10, -1))
-    else:
-        quantity = str(random.randint(1, 50))
-
-    # CustomerID: limited pool to create duplicates
-    customer_id = f"CUST-{random.randint(1, 80):04d}"
-
-    return {
-        "OrderDate": order_date,
-        "Region": region,
-        "Product": product,
-        "SalesAmount": sales_amount,
-        "Quantity": quantity,
-        "CustomerID": customer_id,
+    data: dict[str, list] = {
+        "OrderDate": [],
+        "Region": [],
+        "Product": [],
+        "SalesAmount": [],
+        "Quantity": [],
+        "CustomerID": [],
     }
 
-
-def generate_csv(output_path: Path, num_rows: int = 200) -> None:
-    """Generate a CSV file with sample sales data and intentional issues.
-
-    Args:
-        output_path: Path where the CSV file will be saved.
-        num_rows: Number of rows to generate (default 200).
-    """
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    rows: list[dict[str, str]] = []
     for i in range(num_rows):
-        rows.append(generate_row(i))
+        # OrderDate — ~3% invalid dates
+        if random.random() < 0.03:
+            data["OrderDate"].append("13/25/2024")
+        elif random.random() < 0.05:
+            data["OrderDate"].append(None)
+        else:
+            month = random.randint(1, 12)
+            day = random.randint(1, 28)
+            data["OrderDate"].append(f"{month:02d}/{day:02d}/2024")
+
+        # Region — ~5% with leading/trailing whitespace
+        region = random.choice(REGIONS)
+        if random.random() < 0.05:
+            region = f" {region} "
+        if random.random() < 0.05:
+            data["Region"].append(None)
+        else:
+            data["Region"].append(region)
+
+        # Product
+        data["Product"].append(random.choice(PRODUCTS))
+
+        # SalesAmount — ~5% nulls, ~2% outliers
+        if random.random() < 0.05:
+            data["SalesAmount"].append(None)
+        elif random.random() < 0.02:
+            data["SalesAmount"].append(999999.99)
+        else:
+            data["SalesAmount"].append(round(random.uniform(50, 2000), 2))
+
+        # Quantity — ~3% negative
+        if random.random() < 0.03:
+            data["Quantity"].append(-random.randint(1, 10))
+        else:
+            data["Quantity"].append(random.randint(1, 50))
+
+        # CustomerID — limited pool for duplicates
+        data["CustomerID"].append(f"CUST-{random.randint(1, 150):04d}")
+
+    df = pd.DataFrame(data)
 
     # Add ~3% exact duplicate rows
-    num_duplicates = int(num_rows * 0.03)
-    for _ in range(num_duplicates):
-        duplicate_source = random.choice(rows)
-        rows.append(duplicate_source.copy())
+    num_dupes = int(num_rows * 0.03)
+    if num_dupes > 0 and len(df) > 0:
+        dupes = df.sample(n=num_dupes, random_state=seed)
+        df = pd.concat([df, dupes], ignore_index=True)
 
-    random.shuffle(rows)
-
-    # Add ~5% missing values by randomly blanking cells
-    for row in rows:
-        if random.random() < 0.05:
-            field = random.choice(["OrderDate", "Region", "Product", "Quantity"])
-            row[field] = ""
-
-    with output_path.open("w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=COLUMNS)
-        writer.writeheader()
-        writer.writerows(rows)
-
-    logger.info("Generated %d rows → %s", len(rows), output_path)
+    return df
 
 
 def main() -> None:
@@ -151,10 +117,15 @@ def main() -> None:
         default=42,
         help="Random seed for reproducibility (default: 42)",
     )
-    args = parser.parse_args()
 
-    random.seed(args.seed)
-    generate_csv(args.output, args.num_rows)
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+
+    df = generate_sales_data(num_rows=args.num_rows, seed=args.seed)
+    df.to_csv(args.output, index=False)
+    logger.info("Generated %d rows → %s", len(df), args.output)
 
 
 if __name__ == "__main__":

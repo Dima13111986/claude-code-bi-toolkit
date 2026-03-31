@@ -1,0 +1,6 @@
+OrderDate,Region,Product,SalesAmount,Quantity,CustomerID
+01/15/2024,North,Laptop,1200.50,5,CUST-0001
+01/15/2024,North,Laptop,1200.50,5,CUST-0001
+02/20/2024,South,Monitor,450.00,2,CUST-0002
+02/20/2024,South,Monitor,450.00,2,CUST-0002
+03/10/2024,East,Keyboard,89.99,10,CUST-0003
