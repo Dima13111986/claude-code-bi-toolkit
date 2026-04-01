@@ -1,0 +1,145 @@
+{
+  "version": "1.0.0",
+  "snippets": [
+    {
+      "id": "ytd-sales",
+      "name": "YTD Sales",
+      "category": "time-intelligence",
+      "description": "Year-to-Date sales with optional fiscal year support.",
+      "dax": "YTD Sales =\nVAR _Result =\n    CALCULATE(\n        [Total Sales],\n        DATESYTD(DimDate[Date], \"6/30\")\n    )\nRETURN\n    _Result",
+      "tags": [
+        "ytd",
+        "time-intelligence",
+        "fiscal"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "sales-vs-previous-year",
+      "name": "Sales vs Previous Year",
+      "category": "time-intelligence",
+      "description": "Compare current sales to same period last year.",
+      "dax": "Sales vs PY =\nVAR _Current = [Total Sales]\nVAR _PY =\n    CALCULATE(\n        [Total Sales],\n        SAMEPERIODLASTYEAR(DimDate[Date])\n    )\nRETURN\n    DIVIDE(_Current - _PY, _PY, 0)",
+      "tags": [
+        "yoy",
+        "time-intelligence",
+        "comparison"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "running-total",
+      "name": "Running Total",
+      "category": "cumulative",
+      "description": "Cumulative running total over a date axis.",
+      "dax": "Running Total =\nVAR _MaxDate = MAX(DimDate[Date])\nVAR _Result =\n    CALCULATE(\n        [Total Sales],\n        DimDate[Date] <= _MaxDate,\n        ALL(DimDate[Date])\n    )\nRETURN\n    _Result",
+      "tags": [
+        "running-total",
+        "cumulative"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "pct-of-grand-total",
+      "name": "Pct of Grand Total",
+      "category": "ratio",
+      "description": "Percentage contribution to the grand total.",
+      "dax": "% of Grand Total =\nVAR _Current = [Total Sales]\nVAR _GrandTotal =\n    CALCULATE(\n        [Total Sales],\n        ALL(DimProduct)\n    )\nRETURN\n    DIVIDE(_Current, _GrandTotal, 0)",
+      "tags": [
+        "percentage",
+        "ratio",
+        "grand-total"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "moving-average-3m",
+      "name": "Moving Average 3M",
+      "category": "statistical",
+      "description": "3-month moving average of sales.",
+      "dax": "Moving Avg 3M =\nVAR _Period = 3\nVAR _Result =\n    AVERAGEX(\n        DATESINPERIOD(\n            DimDate[Date],\n            MAX(DimDate[Date]),\n            -_Period,\n            MONTH\n        ),\n        [Total Sales]\n    )\nRETURN\n    _Result",
+      "tags": [
+        "moving-average",
+        "statistical",
+        "trend"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "cumulative-total",
+      "name": "Cumulative Total",
+      "category": "cumulative",
+      "description": "Cumulative total within the current filter context.",
+      "dax": "Cumulative Total =\nVAR _CurrentDate = MAX(DimDate[Date])\nVAR _Result =\n    CALCULATE(\n        [Total Sales],\n        FILTER(\n            ALL(DimDate),\n            DimDate[Date] <= _CurrentDate\n        )\n    )\nRETURN\n    _Result",
+      "tags": [
+        "cumulative",
+        "running"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "rank-by-sales",
+      "name": "Rank by Sales",
+      "category": "ranking",
+      "description": "Rank products or categories by total sales.",
+      "dax": "Rank by Sales =\nVAR _CurrentSales = [Total Sales]\nVAR _Result =\n    COUNTROWS(\n        FILTER(\n            ALL(DimProduct[ProductName]),\n            [Total Sales] > _CurrentSales\n        )\n    ) + 1\nRETURN\n    _Result",
+      "tags": [
+        "rank",
+        "ranking",
+        "top-n"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "distinct-customer-count",
+      "name": "Distinct Customer Count",
+      "category": "aggregation",
+      "description": "Count of unique customers with transactions.",
+      "dax": "Distinct Customers =\nVAR _Result =\n    DISTINCTCOUNT(FactSales[CustomerID])\nRETURN\n    _Result",
+      "tags": [
+        "distinct",
+        "count",
+        "customers"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "safe-divide-wrapper",
+      "name": "Safe DIVIDE Wrapper",
+      "category": "utility",
+      "description": "Template for safe division — never use raw /.",
+      "dax": "Safe Ratio =\nVAR _Numerator = [Measure A]\nVAR _Denominator = [Measure B]\nRETURN\n    DIVIDE(_Numerator, _Denominator, 0)",
+      "tags": [
+        "divide",
+        "safe",
+        "utility",
+        "template"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    },
+    {
+      "id": "dynamic-top-n",
+      "name": "Dynamic Top N",
+      "category": "ranking",
+      "description": "Show top N items controlled by a slicer parameter.",
+      "dax": "Is Top N =\nVAR _N = SELECTEDVALUE(TopNParameter[Value], 10)\nVAR _Rank = [Rank by Sales]\nRETURN\n    IF(_Rank <= _N, 1, 0)",
+      "tags": [
+        "top-n",
+        "dynamic",
+        "slicer",
+        "parameter"
+      ],
+      "created": "2026-04-01T10:37:36+00:00",
+      "modified": "2026-04-01T10:37:36+00:00"
+    }
+  ]
+}
